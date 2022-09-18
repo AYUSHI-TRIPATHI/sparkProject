@@ -37,7 +37,7 @@ object taskSecond
     max_rating.show()
 
     //3) The number of movies that have maximum rating
-    val max_rat_mov  = spark.sql("select m_name movie_name Movie Name, rating Rating  from movies where rating == (select rating from movies order by rating desc limit 1)")
+    val max_rat_mov  = spark.sql("select m_name Movie_Name, rating Rating  from movies where rating == (select rating from movies order by rating desc limit 1)")
     max_rat_mov.show()
 
     //4) The movies with ratings 1 and 2
@@ -45,11 +45,11 @@ object taskSecond
     if (rat_mov.count()==0){println("No Movie Found with 1 or 2 Rating")}else{rat_mov.show()}
 
     //5) The list of years and number of movies released each year
-    val year_movie = spark.sql("select year,count(*) Number of Movies as count from movies group by year")
+    val year_movie = spark.sql("select year,count(*) Number_of_Movies from movies group by year")
     year_movie.show()
 
     //6) The number of movies that have a runtime of two hours
-    val r_time = spark.sql("select m_name as Movie Name, runtime Runtime from movies where runtime == '7200'")
+    val r_time = spark.sql("select m_name Movie_Name, runtime Runtime from movies where runtime == '7200'")
     r_time.show()
 
   }

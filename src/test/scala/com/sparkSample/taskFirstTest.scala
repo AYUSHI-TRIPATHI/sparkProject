@@ -1,33 +1,47 @@
 package com.sparkSample
 
+import org.apache.spark.SparkConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
-import com.sparkSample.sample.{loadSurveyDf,reasonbreakdown,reasonDelay,route_num_delay,route_num_breakdown,less_accidents,incident_inbus,incident_notinbus}
-
-
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.BeforeAndAfterAll
+//import com.sparkSample.taskFirst.{loadSurveyDf,reasonBreakdown,reasonDelay,route_num_delay,route_num_breakdown,lessAccidents,incidentInbus,incidentNotinbus}
 import scala.collection.mutable
 
 
-class sampleTest extends FunSuite with BeforeAndAfterAll {
-  @transient var spark: SparkSession = _
+class taskFirstTest extends AnyFunSuite with BeforeAndAfterAll {
+//  @transient var spark: SparkSession = _
+  val test = new taskFirst
+//  def loadSurveyDf(spark:SparkSession,DataFile:String):DataFrame=
+//  {
+//    spark.read.option("header", "true")
+//      .option("InferSchema", "true")
+//      .csv("C:\\Users\\ayushi.tripathi02\\IdeaProjects\\sparkLearning\\dataset.csv").toDF()
+//  }
 
+  val spark_conf = new SparkConf().setAppName("READ.CSV").setMaster("local[3]")
+  val spark = SparkSession
+        .builder()
+        .config(spark_conf)
+        .getOrCreate()
 
-  override def beforeAll(): Unit = {
-    spark = SparkSession
-      .builder()
-      .appName("HelloTest")
-      .master("local[3]")
-      .getOrCreate()
-  }
+  val  busDf = test.loadSurveyDf(spark,"dataset.csv")
 
-  override def afterAll(): Unit = {
-    spark.stop()
-  }
+//  override def beforeAll(): Unit = {
+//    spark = SparkSession
+//      .builder()
+//      .appName("HelloTest")
+//      .master("local[3]")
+//      .getOrCreate()
+//  }
+//
+//  override def afterAll(): Unit = {
+//    spark.stop()
+//  }
 
 
   //mytest
   test(" File Loading") {
-    val sampleDf = loadSurveyDf(spark, "dataset.csv")
+    val sampleDf = test.loadSurveyDf(spark, "dataset.csv")
     val count = sampleDf.count()
 
     assert(count == 277113, "for 2015-2016 count is 31200")
@@ -37,8 +51,8 @@ class sampleTest extends FunSuite with BeforeAndAfterAll {
 
   //1st part 1
   test(" Reason for Delay") {
-    val sampleDf = loadSurveyDf(spark, "dataset.csv")
-    val result = reasonDelay(sampleDf)
+    //val sampleDf = loadSurveyDf(spark, "dataset.csv")
+    val result = test.reasonDelay(busDf)
     val delay_Reason = new mutable.HashMap[String, Long]
     result.collect().foreach(x => delay_Reason.put(x.getString(0), x.getLong(1)))
 
@@ -50,8 +64,8 @@ class sampleTest extends FunSuite with BeforeAndAfterAll {
 
   //1st part 2
   test(" Reason for breakdown") {
-    val sampleDf = loadSurveyDf(spark, "dataset.csv")
-    val result = reasonbreakdown(sampleDf)
+    //val sampleDf = loadSurveyDf(spark, "dataset.csv")
+    val result = test.reasonBreakdown(busDf)
     val breakdown_Reason = new mutable.HashMap[String, Long]
     result.collect().foreach(x => breakdown_Reason.put(x.getString(0), x.getLong(1)))
 
@@ -64,8 +78,8 @@ class sampleTest extends FunSuite with BeforeAndAfterAll {
 
     //2nd part 1
     test("Top 5 route because of delay"){
-      val sampleDf = loadSurveyDf(spark,"dataset.csv")
-      val result = route_num_delay(sampleDf)
+      //val sampleDf = loadSurveyDf(spark,"dataset.csv")
+      val result = test.route_num_delay(busDf)
       val breakdown_Routenum = new mutable.HashMap[String,Long]
       result.collect().foreach(x => breakdown_Routenum.put(x.getString(0),x.getLong(1)))
 
@@ -79,8 +93,8 @@ class sampleTest extends FunSuite with BeforeAndAfterAll {
   //
   //  //2nd part 2
     test("Top 5 route because of breakdown"){
-      val sampleDf = loadSurveyDf(spark,"dataset.csv")
-      val result = route_num_breakdown(sampleDf)
+      //val sampleDf = loadSurveyDf(spark,"dataset.csv")
+      val result = test.route_num_breakdown(busDf)
       val delay_Routenum = new mutable.HashMap[String,Long]
       result.collect().foreach(x => delay_Routenum.put(x.getString(0),x.getLong(1)))
 
@@ -94,8 +108,8 @@ class sampleTest extends FunSuite with BeforeAndAfterAll {
 
   //3rd part 1
   test("Not in Bus") {
-    val sampleDf = loadSurveyDf(spark, "dataset.csv")
-    val result = incident_notinbus(sampleDf)
+    //val sampleDf = loadSurveyDf(spark, "dataset.csv")
+    val result = test.incidentNotinbus(busDf)
     val notinbus = new mutable.HashMap[String, Long]
     result.collect().foreach(x => notinbus.put(x.getString(0), x.getLong(1)))
 
@@ -108,8 +122,8 @@ class sampleTest extends FunSuite with BeforeAndAfterAll {
 
   //3rd part 2
   test(" In Bus") {
-    val sampleDf = loadSurveyDf(spark, "dataset.csv")
-    val result = incident_inbus(sampleDf)
+    //val sampleDf = loadSurveyDf(spark, "dataset.csv")
+    val result = test.incidentInbus(busDf)
     val inbus = new mutable.HashMap[String, Long]
     result.collect().foreach(x => inbus.put(x.getString(0), x.getLong(1)))
 
@@ -123,8 +137,8 @@ class sampleTest extends FunSuite with BeforeAndAfterAll {
 
     //4th
     test("Least Accident Year"){
-      val sampleDf = loadSurveyDf(spark,"dataset.csv")
-      val result = less_accidents(sampleDf)
+      //val sampleDf = loadSurveyDf(spark,"dataset.csv")
+      val result = test.lessAccidents(busDf)
       val less_accident = new mutable.HashMap[String,Long]
       result.collect().foreach(x => less_accident.put(x.getString(0),x.getLong(1)))
 

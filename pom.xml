@@ -27,21 +27,22 @@
             <artifactId>spark-sql_2.12</artifactId>
             <version>3.2.2</version>
         </dependency>
+        <!-- Spark Streaming Dependency -->
+        <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-streaming -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming_2.12</artifactId>
+            <version>3.2.2</version>
+            <scope>provided</scope>
+        </dependency>
         <!--Scala Testing Dependency-->
         <!-- https://mvnrepository.com/artifact/org.scalatest/scalatest -->
-<!--        <dependency>-->
-<!--            <groupId>org.scalatest</groupId>-->
-<!--            <artifactId>scalatest_2.12</artifactId>-->
-<!--            <version>2.2.12</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-
         <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.12</artifactId>
-            <version>3.0.8</version>
-            <scope>test</scope>
-        </dependency>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest_2.12</artifactId>
+        <version>3.2.12</version>
+        <scope>test</scope>
+    </dependency>
 
 
     </dependencies>

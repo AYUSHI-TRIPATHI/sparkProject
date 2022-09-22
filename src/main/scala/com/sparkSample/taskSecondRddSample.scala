@@ -4,7 +4,7 @@ import org.apache.spark.{SparkConf, rdd}
 import org.apache.spark.sql.SparkSession
 import scala.language.implicitConversions
 
-object taskFirstRdd extends Serializable {
+object taskSecondRddSample extends Serializable {
   def main(args: Array[String]): Unit = {
     val spark_conf = new SparkConf().setAppName("READ.CSV").setMaster("local[3]")
     val spark = SparkSession

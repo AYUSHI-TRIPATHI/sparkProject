@@ -1,104 +1,70 @@
 package com.sparkSample
 
-import com.sparkSample.taskFirst.reasonDelay
+import org.apache.spark.SparkConf
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
-
-import scala.language.implicitConversions
-import org.apache.spark.sql.functions.{asc, col, desc, expr, max}
+import org.apache.spark.sql.functions.{asc, col, desc}
 
 
 class taskSecond extends Serializable {
-  def totalMovies(Df1: DataFrame): Long = {
-    Df1.count()
+  def loadSurveyDf(spark:SparkSession,DataFile:String):DataFrame=
+  {
+    spark.read.option("header", "true")
+      .option("InferSchema", "true")
+      .csv("C:\\Users\\ayushi.tripathi02\\IdeaProjects\\sparkLearning\\dataset.csv").toDF()
   }
 
-  def maxRating(Df2: DataFrame): Dataset[Row] = {
-    Df2.select("m_name","rating").orderBy(desc("rating")).limit(1)
+  // 1. Most common reasons for delay
+  def reasonDelay(Df11:DataFrame): Dataset[Row] = {
+    Df11.groupBy("Reason").count()
+      .filter(col("Reason") === "Heavy Traffic" or col("Reason") === "Weather Conditions" or col("Reason") === "Late return from Field Trip" or col("Reason") === "Delayed by School")
+      .orderBy(desc("count"))
   }
 
-  //  def maxRatingMovies(Df3:DataFrame): Dataset[Row] = {
-  //    Df3.where("rating==1.0 or rating ==2.0")
-  //  }
-  def ratingTwoOne(Df4: DataFrame): Dataset[Row] = {
-    Df4.select("m_name","rating")where("rating==1.0 or rating ==2.0")
+  //1.Most common reasons for breakdown
+  def reasonBreakdown(Df12:DataFrame): Dataset[Row] = {
+    Df12.groupBy(col("Reason")).count()
+      .filter(col("Reason") === "Problem Run" or col("Reason") === "Other" or col("Reason") === "null" or col("Reason") === "Flat Tire" or col("Reason") === "Mechanical Problem" or col("Reason") === "Won't Start" or col("Reason") === "Accident")
+      .orderBy(desc(("count")))
   }
 
-  def movieCountYearly(Df5: DataFrame): Dataset[Row] = {
-    Df5.groupBy("year").count()
+  //2. Top five route numbers where the bus was  delayed
+  def route_num_delay(Df21:DataFrame): DataFrame = {
+    Df21.groupBy(col("Reason"), col("Route_Number")).count()
+      .orderBy(desc(("count")))
+      .filter(col("Reason") === "Heavy Traffic" or col("Reason") === "Weather Conditions" or col("Reason") === "Late return from Field Trip" or col("Reason") === "Delayed by School")
+      .limit(5)
+      .select("Route_Number","count")
   }
 
-  def runtimeTwoHours(Df6: DataFrame): Dataset[Row] = {
-    Df6.select("m_name","runtime").where((Df6("runtime")==="7200"))
+  //2.Top five route numbers where the bus was broke down
+  def route_num_breakdown(Df22:DataFrame): DataFrame = {
+    Df22.groupBy(col("Reason"), col("Route_Number")).count()
+      .orderBy(desc(("count")))
+      .filter(col("Reason") === "Problem Run" or col("Reason") === "Other" or col("Reason") === "null" or col("Reason") === "Flat Tire" or col("Reason") === "Mechanical Problem" or col("Reason") === "Won't Start" or col("Reason") === "Accident")
+      .limit(5)
+      .select("Route_Number","count")
   }
 
+  //3. The total number of incidents, year-wise, when the students were not in bus
+  def incidentNotinbus(Df31:DataFrame): Dataset[Row] = {
+    Df31.filter(col("Number_Of_Students_On_The_Bus") === 0)
+      .groupBy("School_Year").count()
+      .orderBy("School_Year")
+  }
 
-//  case class M_Schema(s_num: String, m_name: String, year: String, rating: String, runtime: String);
-//
-//  def main(args: Array[String]): Unit = {
-//
-//    val spark = SparkSession
-//      .builder()
-//      .master("local[3]")
-//      .appName("Movie")
-//      .getOrCreate()
-//
-//    import spark.implicits._
-//    val rdd = spark.sparkContext.textFile("C:\\Users\\ayushi.tripathi02\\IdeaProjects\\sparkLearning\\Dataset_movie.txt")
-//
-//
-//    //make rdd
-//    val mov = rdd.map(_.split(",")).filter(x => x.length == 5).map(x => M_Schema(x(0), x(1), x(2), x(3), x(4)))
-//    // RDD -> DF
-//    val movDf = mov.toDF()
-//    //create view
-//    movDf.createOrReplaceTempView("movies")
-//
-//
-//    //1) The total number of movies
-//    val count = totalMovies(movDf)
-//    println(count)
-//    //movDf.count()
-//    //    sql query
-//    //    val count_movie = spark.sql(s"select count(*) as count from movies")
-//    //    count_movie.show()
-//
-//    //2) The maximum rating of movies
-//    val df2 = maxRating(movDf)
-//    df2.show(false)
-//    //    sql query
-//    //    val max_rating = spark.sql("select rating from movies order by rating desc limit 1")
-//    //    max_rating.show()
-//
-//    //3) The number of movies that have maximum rating
-//    //movDf.filter(col("rating")==="4.5").select("m_name","rating").show()
-//    //movDf.filter(col("rating")===max("rating")).count()
-//    //movDf.orderBy(desc("rating")).select("max(rating)","m_name").show()
-//    //    sql query
-//    //    val max_rat_mov  = spark.sql("select m_name Movie_Name, rating Rating  from movies where rating == (select rating from movies order by rating desc limit 1)")
-//    //    max_rat_mov.show()
-//
-//    //4) The movies with ratings 1 and 2
-//    val df4 = ratingTwoOne(movDf)
-//    df4.show(false)
-//    //    sql query
-//    //    val rat_mov = spark.sql("select m_name movie,rating from movies where rating in ('1','2')")
-//    //    if (rat_mov.count()==0){println("No Movie Found with 1 or 2 Rating")}else{rat_mov.show()}
-//
-//    //5) The list of years and number of movies released each year
-//    val df5 = movieCountYearly(movDf)
-//    df5.show(false)
-//    //    sql query
-//    //    val year_movie = spark.sql("select year,count(*) Number_of_Movies from movies group by year")
-//    //    year_movie.show()
-//
-//    //6) The number of movies that have a runtime of two hours
-//    val df6 = runtimeTwoHours(movDf)
-//    df6.show(false)
-//    //    sql query
-//    //    val r_time = spark.sql("select m_name Movie_Name, runtime Runtime from movies where runtime == '7200'")
-//    //    r_time.show()
-//
-//
-//  }
+  // 3. The total number of incidents, year-wise, when the students were in bus
+  def incidentInbus(Df32:DataFrame): Dataset[Row] = {
+    Df32.filter(col("Number_Of_Students_On_The_Bus") =!= 0)
+      .groupBy("School_Year").count()
+      .orderBy("School_Year")
+  }
+
+  //4. The year in which accidents were less
+  def lessAccidents(Df4:DataFrame): DataFrame = {
+    Df4.filter(col("Reason") === "Accident")
+      .groupBy("School_Year", "Reason").count()
+      .orderBy(asc("count"))
+      .limit(1)
+      .select("School_Year","count")
+  }
 }
-
